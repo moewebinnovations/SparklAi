@@ -32,16 +32,7 @@ function classNames(...classes: string[]) {
 }
 
 async function redirectToCheckout(priceId: string, email: string) {
-  if (!priceId || typeof priceId !== 'string' || !/^[a-zA-Z0-9_]+$/.test(priceId)) {
-    console.error('Invalid price ID');
-    return;
-  }
-
-  if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email)) {
-    console.error('Invalid email');
-    return;
-  }
-
+  console.log("Price ID in redirectToCheckout:", priceId); // Debug log
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: {
@@ -157,11 +148,13 @@ export default function BillingPage() {
   const handleUpgradeClick = async (priceId: string) => {
     setLoading(true);
     try {
+      console.log("Price ID in handleUpgradeClick:", priceId); // Debug log
       await redirectToCheckout(priceId, userEmail);
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleCancelSubscription = async () => {
     setLoadingCancelButton(true);

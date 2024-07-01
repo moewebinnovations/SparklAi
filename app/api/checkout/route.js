@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function POST(req) {
   try {
     const { priceId, email } = await req.json();
-    console.log("Received priceId:", priceId, "Email:", email);
+    console.log("Received priceId:", priceId, "Email:", email); // Debug log
 
     if (!priceId) {
       console.error("Price ID is missing");
