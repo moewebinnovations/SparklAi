@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../utils/db'; // Adjust the path as needed
 import { UserSubscription } from '../../../utils/schema'; // Adjust the path as needed
 import { eq } from 'drizzle-orm';
-import { users } from '@clerk/clerk-sdk-node'; // Import Clerk correctly
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
@@ -23,6 +22,9 @@ export async function POST(req) {
     console.error('⚠️  Webhook signature verification failed.', err.message);
     return new NextResponse('Webhook Error: signature verification failed', { status: 400 });
   }
+
+  // Log the event for now
+  console.log('Success:', event);
 
   // Handle the event
   switch (event.type) {
@@ -50,7 +52,7 @@ export async function POST(req) {
         paymentId: invoice.payment_intent,
         joinDate: new Date().toISOString(),
         stripeCustomerId: customer.id, // Store the Stripe customer ID
-        stripeSubscriptionId: invoice.subscription, // Store the Stripe subscription ID
+        stripesubscriptionid: invoice.subscription, // Store the Stripe subscription ID
       };
 
       // Save subscription data to the database
@@ -70,8 +72,8 @@ export async function POST(req) {
       try {
         await db
           .update(UserSubscription)
-          .set({ cancelAtPeriodEnd: subscription.cancel_at_period_end })
-          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id))
+          .set({ active: false })
+          .where(eq(UserSubscription.stripesubscriptionid, subscription.id))
           .execute(); // Ensure you call .execute() at the end of the query chain
 
         console.log('Subscription record updated in the database.');
@@ -88,7 +90,7 @@ export async function POST(req) {
         // Delete the subscription record from the database
         await db
           .delete(UserSubscription)
-          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id))
+          .where(eq(UserSubscription.stripesubscriptionid, subscription.id))
           .execute(); // Ensure you call .execute() at the end of the query chain
 
         console.log('Subscription record deleted from database.');
