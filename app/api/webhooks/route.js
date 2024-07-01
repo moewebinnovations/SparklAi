@@ -5,7 +5,7 @@ import { UserSubscription } from '../../../utils/schema'; // Adjust the path as 
 import { users } from '@clerk/clerk-sdk-node'; // Import Clerk correctly
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2024-04-10',
 });
 
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET; // Store your webhook secret in an environment variable
