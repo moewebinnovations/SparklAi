@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { db } from '@/utils/db';
 import { UserSubscription } from '@/utils/schema';
 import { eq } from 'drizzle-orm';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2022-11-15',
+});
 
 export async function POST(req) {
   try {
@@ -10,8 +15,25 @@ export async function POST(req) {
       throw new Error('Missing email');
     }
 
+    // Find the subscription record in the database
+    const subscription = await db
+      .select()
+      .from(UserSubscription)
+      .where(eq(UserSubscription.email, email))
+      .first();
+
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    // Cancel the subscription in Stripe
+    const stripeSubscriptionId = subscription.stripeSubscriptionId; // Assuming you have stored Stripe subscription ID
+    await stripe.subscriptions.del(stripeSubscriptionId);
+
     // Delete the subscription record from the database
-    const result = await db.delete(UserSubscription).where(eq(UserSubscription.email, email));
+    const result = await db
+      .delete(UserSubscription)
+      .where(eq(UserSubscription.email, email));
 
     console.log('Deletion result:', result);
 
