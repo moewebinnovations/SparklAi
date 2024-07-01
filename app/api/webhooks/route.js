@@ -27,40 +27,62 @@ export async function POST(req) {
   console.log('Success:', event);
 
   // Handle the event
-  if (event.type === 'invoice.payment_succeeded') {
-    const invoice = event.data.object;
-    const customer = await stripe.customers.retrieve(invoice.customer);
+  switch (event.type) {
+    case 'invoice.payment_succeeded': {
+      const invoice = event.data.object;
+      const customer = await stripe.customers.retrieve(invoice.customer);
 
-    // Fetch Clerk user details
-    const userId = customer.metadata.clerkUserId; // Assuming you have stored the Clerk user ID in Stripe metadata
-    let userEmail = '';
-    try {
-      const clerkUser = await users.getUser(userId);
-      if (clerkUser && clerkUser.primaryEmailAddress) {
-        userEmail = clerkUser.primaryEmailAddress.emailAddress;
+      // Fetch Clerk user details
+      const userId = customer.metadata.clerkUserId; // Assuming you have stored the Clerk user ID in Stripe metadata
+      let userEmail = '';
+      try {
+        const clerkUser = await users.getUser(userId);
+        if (clerkUser && clerkUser.primaryEmailAddress) {
+          userEmail = clerkUser.primaryEmailAddress.emailAddress;
+        }
+      } catch (error) {
+        console.error('Error fetching Clerk user details:', error);
       }
-    } catch (error) {
-      console.error('Error fetching Clerk user details:', error);
-    }
 
-    // Extract relevant information
-    const subscriptionData = {
-      email: customer.email,
-      userName: userEmail || 'Unknown User',
-      active: true, // Ensure this is a boolean
-      paymentId: invoice.payment_intent,
-      joinDate: new Date().toISOString(),
-      stripeCustomerId: customer.id, // Store the Stripe customer ID
-      stripeSubscriptionId: invoice.subscription, // Store the Stripe subscription ID
-    };
+      // Extract relevant information
+      const subscriptionData = {
+        email: customer.email,
+        userName: userEmail || 'Unknown User',
+        active: true, // Ensure this is a boolean
+        paymentId: invoice.payment_intent,
+        joinDate: new Date().toISOString(),
+        stripeCustomerId: customer.id, // Store the Stripe customer ID
+        stripeSubscriptionId: invoice.subscription, // Store the Stripe subscription ID
+      };
 
-    // Save subscription data to the database
-    try {
-      await db.insert(UserSubscription).values(subscriptionData);
-      console.log('Subscription saved to database successfully.');
-    } catch (dbError) {
-      console.error('Error saving subscription to database:', dbError);
+      // Save subscription data to the database
+      try {
+        await db.insert(UserSubscription).values(subscriptionData);
+        console.log('Subscription saved to database successfully.');
+      } catch (dbError) {
+        console.error('Error saving subscription to database:', dbError);
+      }
+      break;
     }
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object;
+
+      try {
+        // Delete the subscription record from the database
+        await db
+          .delete(UserSubscription)
+          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id));
+
+        console.log('Subscription record deleted from database.');
+      } catch (error) {
+        console.error('Error deleting subscription record from database:', error.message);
+        return new NextResponse('Internal Server Error', { status: 500 });
+      }
+      break;
+    }
+    // Add other event types as needed
+    default:
+      console.log(`Unhandled event type ${event.type}`);
   }
 
   // Send a response to acknowledge receipt of the event

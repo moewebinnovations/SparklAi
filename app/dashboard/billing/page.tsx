@@ -31,7 +31,7 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-async function redirectToCheckout(priceId: string, email: string) {
+async function redirectToCheckout(priceId: any, email: string) {
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: {
@@ -78,41 +78,16 @@ async function redirectToCustomerPortal(customerId: string) {
   window.location.href = url;
 }
 
-async function deleteSubscriptionRecord(email: string) {
-  if (!email || !/\S+@\S+\.\S+/.test(email)) {
-    console.error('Invalid email');
-    return;
-  }
-
-  try {
-    const response = await fetch('/api/subscription/cancel', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email }), // Pass the user email in the request body
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to delete subscription record:', errorText);
-      return;
-    }
-
-    console.log('Subscription record deleted');
-  } catch (error) {
-    console.error('Error deleting subscription record:', error);
-  }
-}
 
 export default function BillingPage() {
   const { user } = useUser();
   const router = useRouter();
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [customerId, setCustomerId] = useState<string | null>(null);
+
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
-  const [loading, setLoading] = useState<boolean>(false);
-  const [loadingCancelButton, setLoadingCancelButton] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingCancelButton, setLoadingCancelButton] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -136,7 +111,7 @@ export default function BillingPage() {
 
     if (subscription && subscription.active) {
       setIsSubscribed(true);
-      setCustomerId(subscription.stripeCustomerId || null);
+      setCustomerId(subscription?.stripeCustomerId || null);
     } else {
       setIsSubscribed(false);
     }
@@ -159,7 +134,7 @@ export default function BillingPage() {
     setLoadingCancelButton(true);
     try {
       await redirectToCustomerPortal(customerId);
-      await deleteSubscriptionRecord(userEmail);
+      // Do not delete the subscription record here. This will be handled by the webhook.
       setIsSubscribed(false);
       router.push('/dashboard');
     } finally {
@@ -238,98 +213,97 @@ export default function BillingPage() {
               Free
             </h3>
             <p className="mt-2 flex items-baseline gap-x-1">
-              <span className="text-gray-900 text-4xl font-bold tracking-tight">$0</span>
-              <span className="text-gray-500 text-sm">/month</span>
-            </p>
-            <p className="text-gray-600 mt-2 text-sm leading-6">The perfect plan to start generating content with our AI.</p>
-            <ul role="list" className="text-gray-600 mt-4 space-y-2 text-xs leading-5">
-              {['10,000 words/month', '5 content templates', 'Unlimited Copy', '10 days of history'].map((feature) => (
-                <li key={feature} className="flex gap-x-2">
-                  <CheckIcon className="text-indigo-600 h-5 w-4 flex-none" aria-hidden="true" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <button
-              className="mt-4 block rounded-md px-2.5 py-2 text-center text-xs font-semibold text-gray-200 bg-gray-600 cursor-not-allowed"
-              disabled
-            >
-              Currently Active Plan
-            </button>
-          </div>
-        )}
-        <div className={classNames('relative bg-gray-900 shadow-2xl', 'rounded-3xl p-4 ring-1 ring-gray-900/10 sm:p-6', isSubscribed ? 'max-w-md' : '')}>
-          <h3 id="tier-premium" className="text-indigo-400 text-base font-semibold leading-6">
-            Premium
-          </h3>
-          <p className="mt-2 flex items-baseline gap-x-1">
-            <span className="text-white text-4xl font-bold tracking-tight">$9.99</span>
-            <span className="text-gray-400 text-sm">/month</span>
+            <span className="text-gray-500 text-sm">/month</span>
           </p>
-          <p className="text-gray-300 mt-2 text-sm leading-6">Get the most out of our AI with advanced features and support.</p>
-          <ul role="list" className="text-gray-300 mt-4 space-y-2 text-xs leading-5">
-            {[
-              '1,000,000 words/month',
-              '30+ Content templates',
-              'Unlimited Download and Copy',
-              'Access to early Content Templates',
-              '1 Year of history',
-              'Download History',
-            ].map((feature) => (
+          <p className="text-gray-600 mt-2 text-sm leading-6">The perfect plan to start generating content with our AI.</p>
+          <ul role="list" className="text-gray-600 mt-4 space-y-2 text-xs leading-5">
+            {['10,000 words/month', '5 content templates', 'Unlimited Copy', '10 days of history'].map((feature) => (
               <li key={feature} className="flex gap-x-2">
-                <CheckIcon className="text-indigo-400 h-5 w-4 flex-none" aria-hidden="true" />
+                <CheckIcon className="text-indigo-600 h-5 w-4 flex-none" aria-hidden="true" />
                 {feature}
               </li>
             ))}
           </ul>
-          {isSubscribed ? (
-            <>
-              <button
-                className="mt-4 w-full block rounded-md px-2.5 py-2 text-center text-sm font-semibold text-gray-200 bg-gray-600 cursor-not-allowed"
-                disabled
-              >
-                Current Plan
-              </button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    className="mt-4 w-full block rounded-md px-2.5 py-2 text-center text-sm font-semibold text-white bg-red-600 shadow-sm hover:bg-red-500 focus-visible:outline-red-600"
-                  >
-                    {loadingCancelButton ? (
-                      <Loader className="h-5 w-5 animate-spin mx-auto" />
-                    ) : (
-                      'Cancel Subscription'
-                    )}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete your subscription and remove your data from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancelSubscription}>Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          ) : (
-            <button
-              onClick={() => handleUpgradeClick('price_1PXqUHP2RWOJhMEQsnfdevyh')} // Replace with your actual price ID from Stripe
-              className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
-            >
-              {loading ? (
-                <Loader className="h-5 w-5 animate-spin mx-auto" />
-              ) : (
-                'Upgrade Now'
-              )}
-            </button>
-          )}
+          <button
+            className="mt-4 block rounded-md px-2.5 py-2 text-center text-xs font-semibold text-gray-200 bg-gray-600 cursor-not-allowed"
+            disabled
+          >
+            Currently Active Plan
+          </button>
         </div>
+      )}
+      <div className={classNames('relative bg-gray-900 shadow-2xl', 'rounded-3xl p-4 ring-1 ring-gray-900/10 sm:p-6', isSubscribed ? 'max-w-md' : '')}>
+        <h3 id="tier-premium" className="text-indigo-400 text-base font-semibold leading-6">
+          Premium
+        </h3>
+        <p className="mt-2 flex items-baseline gap-x-1">
+          <span className="text-white text-4xl font-bold tracking-tight">$9.99</span>
+          <span className="text-gray-400 text-sm">/month</span>
+        </p>
+        <p className="text-gray-300 mt-2 text-sm leading-6">Get the most out of our AI with advanced features and support.</p>
+        <ul role="list" className="text-gray-300 mt-4 space-y-2 text-xs leading-5">
+          {[
+            '1,000,000 words/month',
+            '30+ Content templates',
+            'Unlimited Download and Copy',
+            'Access to early Content Templates',
+            '1 Year of history',
+            'Download History',
+          ].map((feature) => (
+            <li key={feature} className="flex gap-x-2">
+              <CheckIcon className="text-indigo-400 h-5 w-4 flex-none" aria-hidden="true" />
+              {feature}
+            </li>
+          ))}
+        </ul>
+        {isSubscribed ? (
+          <>
+            <button
+              className="mt-4 w-full block rounded-md px-2.5 py-2 text-center text-sm font-semibold text-gray-200 bg-gray-600 cursor-not-allowed"
+              disabled
+            >
+              Current Plan
+            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="mt-4 w-full block rounded-md px-2.5 py-2 text-center text-sm font-semibold text-white bg-red-600 shadow-sm hover:bg-red-500 focus-visible:outline-red-600"
+                >
+                  {loadingCancelButton ? (
+                    <Loader className="h-5 w-5 animate-spin mx-auto" />
+                  ) : (
+                    'Cancel Subscription'
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your subscription and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleCancelSubscription}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        ) : (
+          <button
+            onClick={() => handleUpgradeClick('price_1PXqUHP2RWOJhMEQsnfdevyh')} // Replace with your actual price ID from Stripe
+            className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
+          >
+            {loading ? (
+              <Loader className="h-5 w-5 animate-spin mx-auto" />
+            ) : (
+              'Upgrade Now'
+            )}
+          </button>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }
