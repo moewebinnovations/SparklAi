@@ -11,12 +11,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET; // Store your webhook secret in an environment variable
 
-export const config = {
-  api: {
-    bodyParser: false, // Disable Next.js body parsing
-  },
-};
-
 export async function POST(req) {
   const sig = req.headers.get('stripe-signature');
   let event;
