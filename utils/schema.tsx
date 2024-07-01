@@ -17,7 +17,7 @@ export const UserSubscription = pgTable('UserSubscription', {
   paymentId: varchar('paymentId'),
   joinDate: varchar('joinDate'),
   stripeCustomerId: varchar('stripeCustomerId'), // Add this field
-  stripeSubscriptionId: varchar('stripesubscriptionid'), // changed to lowercase
+  stripesubscriptionid: varchar('stripesubscriptionid'), // changed to lowercase
 
 });
 
