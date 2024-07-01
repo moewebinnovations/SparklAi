@@ -24,7 +24,7 @@ import Link from 'next/link';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
-  throw new Error("STRIPE_PUBLISHABLE_KEY is not defined");
+  throw new Error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not defined");
 }
 
 function classNames(...classes: string[]) {
@@ -32,16 +32,6 @@ function classNames(...classes: string[]) {
 }
 
 async function redirectToCheckout(priceId: string, email: string) {
-  if (!priceId || typeof priceId !== 'string' || !/^[a-zA-Z0-9_]+$/.test(priceId)) {
-    console.error('Invalid price ID');
-    return;
-  }
-
-  if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email)) {
-    console.error('Invalid email');
-    return;
-  }
-
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: {
@@ -65,11 +55,6 @@ async function redirectToCheckout(priceId: string, email: string) {
 }
 
 async function redirectToCustomerPortal(customerId: string) {
-  if (!customerId || typeof customerId !== 'string') {
-    console.error('Invalid customer ID');
-    return;
-  }
-
   const response = await fetch('/api/stripe-portal', {
     method: 'POST',
     headers: {
@@ -89,11 +74,6 @@ async function redirectToCustomerPortal(customerId: string) {
 }
 
 async function deleteSubscriptionRecord(email: string) {
-  if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email)) {
-    console.error('Invalid email');
-    return;
-  }
-
   try {
     const response = await fetch('/api/subscription/cancel', {
       method: 'POST',
@@ -131,28 +111,18 @@ export default function BillingPage() {
   }, [user]);
 
   const fetchSubscriptionStatus = async () => {
-    const email = user?.primaryEmailAddress?.emailAddress;
-  
-    if (!email) {
-      console.error('Email address is undefined');
-      return;
-    }
-  
     const result = await db
       .select()
       .from(UserSubscription)
-      .where(eq(UserSubscription.email, email));
-  
+      .where(eq(UserSubscription.email, user?.primaryEmailAddress?.emailAddress));
+    
     const subscription = result.length > 0 ? result[0] : null;
-  
+
     if (subscription && subscription.active) {
       setIsSubscribed(true);
       setCustomerId(subscription.stripeCustomerId || null); // Set the Stripe customer ID from your database
-    } else {
-      setIsSubscribed(false);
     }
   };
-  
 
   const handleUpgradeClick = async (priceId: string) => {
     setLoading(true);
@@ -176,7 +146,7 @@ export default function BillingPage() {
 
   return (
     <div className="relative isolate bg-white px-4 pt-2 pb-12 sm:pb-16 lg:px-4">
-      <nav className="flex border-b border-gray-200 mb-10 bg-white" aria-label="Breadcrumb">
+            <nav className="flex border-b border-gray-200 mb-10 bg-white" aria-label="Breadcrumb">
         <ol role="list" className="mx-auto flex w-full max-w-screen-xl space-x-4 px-4 sm:px-6 lg:px-8">
           <li className="flex">
             <div className="flex items-center">
@@ -265,8 +235,8 @@ export default function BillingPage() {
             </button>
           </div>
         )}
-<div className={classNames('relative bg-gray-900 shadow-2xl', 'rounded-3xl p-4 ring-1 ring-gray-900/10 sm:p-6', isSubscribed ? 'max-w-md' : '')}>
-<h3 id="tier-premium" className="text-indigo-400 text-base font-semibold leading-6">
+        <div className={classNames('relative bg-gray-900 shadow-2xl', 'rounded-3xl p-4 ring-1 ring-gray-900/10 sm:p-6', isSubscribed && 'max-w-md')}>
+          <h3 id="tier-premium" className="text-indigo-400 text-base font-semibold leading-6">
             Premium
           </h3>
           <p className="mt-2 flex items-baseline gap-x-1">
@@ -325,15 +295,8 @@ export default function BillingPage() {
             </>
           ) : (
             <button
-            onClick={() => {
-              const priceId = "price_1PXppwP2RWOJhMEQct2V5f8g";
-              if (priceId) {
-                handleUpgradeClick(priceId);
-              } else {
-                console.error('Stripe price ID is undefined');
-              }
-            }}
-                          className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
+              onClick={() => handleUpgradeClick('price_1PWkRpP2RWOJhMEQ7zkyRY9h')} // Replace with your actual price ID from Stripe
+              className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
             >
               {loading ? (
                 <Loader className="h-5 w-5 animate-spin mx-auto" />
