@@ -21,9 +21,9 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from 'next/link';
 
-const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-if (!process.env.STRIPE_PUBLISHABLE_KEY) {
+if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
   throw new Error("STRIPE_PUBLISHABLE_KEY is not defined");
 }
 
