@@ -29,7 +29,7 @@ export async function POST(req) {
     console.log('Database query result:', result);
 
     // Cancel the subscription in Stripe
-    const stripeSubscription = await stripe.subscriptions.del(subscription.stripeSubscriptionId);
+    await stripe.subscriptions.del(subscription.stripeSubscriptionId);
 
     // Delete the subscription record from the database
     await db
