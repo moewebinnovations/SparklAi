@@ -65,9 +65,3 @@ export async function POST(req) {
   // Send a response to acknowledge receipt of the event
   return new NextResponse('Event received', { status: 200 });
 }
-
-export const config = {
-  api: {
-    bodyParser: false, // Disable body parsing for Stripe webhooks
-  },
-};
