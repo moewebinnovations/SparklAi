@@ -19,18 +19,16 @@ export async function POST(req) {
     const result = await db
       .select()
       .from(UserSubscription)
-      .where(eq(UserSubscription.email, email))
-      .first();
+      .where(eq(UserSubscription.email, email));
 
-    const subscription = result[0];
+    const subscription = result.length > 0 ? result[0] : null;
 
-    if (!subscription) {
+    if (!subscription || !subscription.stripesubscriptionid) {
       throw new Error('Subscription not found');
     }
 
     // Cancel the subscription in Stripe
-    const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
-    await stripe.subscriptions.cancel(stripeSubscription.id);
+    const stripeSubscription = await stripe.subscriptions.del(subscription.stripesubscriptionid);
 
     // Delete the subscription record from the database
     await db
