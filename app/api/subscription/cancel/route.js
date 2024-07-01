@@ -15,6 +15,7 @@ export async function POST(req) {
       throw new Error('Missing email');
     }
 
+    // Find the subscription in the database
     const result = await db
       .select()
       .from(UserSubscription)
@@ -26,8 +27,10 @@ export async function POST(req) {
 
     const subscription = result[0];
 
+    // Cancel the subscription immediately
     await stripe.subscriptions.del(subscription.stripeSubscriptionId);
 
+    // Delete the subscription record from the database
     await db
       .delete(UserSubscription)
       .where(eq(UserSubscription.email, email));
