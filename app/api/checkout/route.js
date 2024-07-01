@@ -43,6 +43,7 @@ export async function POST(req) {
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
     console.error("Error creating session:", error.message);
+    console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
