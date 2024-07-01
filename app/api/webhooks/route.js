@@ -64,6 +64,24 @@ export async function POST(req) {
       }
       break;
     }
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object;
+      console.log('Subscription updated:', subscription);
+
+      // Optionally, you can update the database to mark this subscription as pending cancellation
+      try {
+        await db
+          .update(UserSubscription)
+          .set({ cancelAtPeriodEnd: subscription.cancel_at_period_end })
+          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id));
+
+        console.log('Subscription record updated in the database.');
+      } catch (error) {
+        console.error('Error updating subscription record in database:', error.message);
+        return new NextResponse('Internal Server Error', { status: 500 });
+      }
+      break;
+    }
     case 'customer.subscription.deleted': {
       const subscription = event.data.object;
 
