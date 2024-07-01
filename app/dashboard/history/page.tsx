@@ -17,6 +17,7 @@ import {
   DialogTitle
 } from '@headlessui/react';
 import Link from 'next/link';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export interface HISTORY {
   id: number;
@@ -29,7 +30,7 @@ export interface HISTORY {
 
 const getTemplateNameAndIcon = (slug: string) => {
   const template = Templates.find(template => template.slug === slug);
-  return template ? { name: template.name, icon: template.icon } : { name: 'Unknown Template', icon: '' };
+  return template ? { name: template.name, icon: template.icon as IconProp } : { name: 'Unknown Template', icon: '' as IconProp };
 };
 
 const getWordCount = (text: string) => {
@@ -55,14 +56,18 @@ function HistoryPage() {
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
       if (user?.primaryEmailAddress?.emailAddress) {
-        const result = await db
-          .select()
-          .from(UserSubscription)
-          .where(eq(UserSubscription.email, user.primaryEmailAddress.emailAddress));
-        
-        const subscription = result.length > 0 ? result[0] : null;
-        if (subscription && subscription.active) {
-          setIsSubscribed(true);
+        try {
+          const result = await db
+            .select()
+            .from(UserSubscription)
+            .where(eq(UserSubscription.email, user.primaryEmailAddress.emailAddress));
+
+          const subscription = result.length > 0 ? result[0] : null;
+          if (subscription && subscription.active) {
+            setIsSubscribed(true);
+          }
+        } catch (err) {
+          console.error("Failed to fetch subscription status:", err);
         }
       }
     };
@@ -139,8 +144,8 @@ function HistoryPage() {
         formatDateString(item.createdAt)
       ])
     ]
-    .map(e => e.join(","))
-    .join("\n");
+      .map(e => e.join(","))
+      .join("\n");
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -285,7 +290,7 @@ function HistoryPage() {
                       {getWordCount(item.aiResponse)}
                     </td>
                     <td className="px-2 md:px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                      {formatDateString(item.createdAt)} {/* Format the date */}
+                      {formatDateString(item.createdAt)}
                     </td>
                     <td className="px-2 md:px-6 py-4 whitespace-no-wrap border-b border-gray-200 flex gap-2">
                       <button
