@@ -16,11 +16,12 @@ export async function POST(req) {
     }
 
     // Find the subscription record in the database
-    const subscription = await db
+    const result = await db
       .select()
       .from(UserSubscription)
-      .where(eq(UserSubscription.email, email))
-      .first();
+      .where(eq(UserSubscription.email, email));
+    
+    const subscription = result[0]; // Assuming the first record is the subscription we want
 
     if (!subscription) {
       throw new Error('Subscription not found');
@@ -31,11 +32,11 @@ export async function POST(req) {
     await stripe.subscriptions.del(stripeSubscriptionId);
 
     // Delete the subscription record from the database
-    const result = await db
+    const deleteResult = await db
       .delete(UserSubscription)
       .where(eq(UserSubscription.email, email));
 
-    console.log('Deletion result:', result);
+    console.log('Deletion result:', deleteResult);
 
     return new NextResponse('Subscription deleted', { status: 200 });
   } catch (error) {
