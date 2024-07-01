@@ -10,12 +10,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export async function POST(req) {
   try {
-    const { email } = await req.json(); // Get user email from the request body
+    const { email } = await req.json();
     if (!email) {
       throw new Error('Missing email');
     }
 
-    // Find the subscription record in the database
     const result = await db
       .select()
       .from(UserSubscription)
@@ -26,17 +25,12 @@ export async function POST(req) {
     }
 
     const subscription = result[0];
-    console.log('Database query result:', result);
 
-    // Cancel the subscription in Stripe
     await stripe.subscriptions.del(subscription.stripeSubscriptionId);
 
-    // Delete the subscription record from the database
     await db
       .delete(UserSubscription)
       .where(eq(UserSubscription.email, email));
-
-    console.log('Subscription deleted successfully');
 
     return new NextResponse('Subscription deleted', { status: 200 });
   } catch (error) {

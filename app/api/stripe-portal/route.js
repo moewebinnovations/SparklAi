@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export async function POST(req) {
   try {
-    const { customerId } = await req.json(); // Get customerId from the request body
+    const { customerId } = await req.json();
     if (!customerId) {
       throw new Error('Missing customerId');
     }

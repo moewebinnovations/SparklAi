@@ -32,7 +32,6 @@ function classNames(...classes: string[]) {
 }
 
 async function redirectToCheckout(priceId: string, email: string) {
-  console.log("Price ID in redirectToCheckout:", priceId); // Debug log
   const response = await fetch('/api/checkout', {
     method: 'POST',
     headers: {
@@ -56,7 +55,7 @@ async function redirectToCheckout(priceId: string, email: string) {
 }
 
 async function redirectToCustomerPortal(customerId: string) {
-  if (!customerId || typeof customerId !== 'string') {
+  if (!customerId) {
     console.error('Invalid customer ID');
     return;
   }
@@ -80,7 +79,7 @@ async function redirectToCustomerPortal(customerId: string) {
 }
 
 async function deleteSubscriptionRecord(email: string) {
-  if (!email || typeof email !== 'string' || !/\S+@\S+\.\S+/.test(email)) {
+  if (!email || !/\S+@\S+\.\S+/.test(email)) {
     console.error('Invalid email');
     return;
   }
@@ -110,7 +109,7 @@ export default function BillingPage() {
   const { user } = useUser();
   const router = useRouter();
   const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-  const [customerId, setCustomerId] = useState<string | null>(null); // State to hold the Stripe customer ID
+  const [customerId, setCustomerId] = useState<string | null>(null);
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingCancelButton, setLoadingCancelButton] = useState<boolean>(false);
@@ -123,32 +122,29 @@ export default function BillingPage() {
 
   const fetchSubscriptionStatus = async () => {
     const email = user?.primaryEmailAddress?.emailAddress;
-  
     if (!email) {
       console.error('Email address is undefined');
       return;
     }
-  
+
     const result = await db
       .select()
       .from(UserSubscription)
       .where(eq(UserSubscription.email, email));
-  
+
     const subscription = result.length > 0 ? result[0] : null;
-  
+
     if (subscription && subscription.active) {
       setIsSubscribed(true);
-      setCustomerId(subscription.stripeCustomerId || null); // Set the Stripe customer ID from your database
+      setCustomerId(subscription.stripeCustomerId || null);
     } else {
       setIsSubscribed(false);
     }
   };
-  
 
   const handleUpgradeClick = async (priceId: string) => {
     setLoading(true);
     try {
-      console.log("Price ID in handleUpgradeClick:", priceId); // Debug log
       await redirectToCheckout(priceId, userEmail);
     } finally {
       setLoading(false);
@@ -162,10 +158,10 @@ export default function BillingPage() {
     }
     setLoadingCancelButton(true);
     try {
-      await redirectToCustomerPortal(customerId); // Redirect the customer to Stripe's billing portal
-      await deleteSubscriptionRecord(userEmail); // Delete the subscription record from the database
-      setIsSubscribed(false); // Update local state to reflect cancellation
-      router.push('/dashboard'); // Redirect to the dashboard
+      await redirectToCustomerPortal(customerId);
+      await deleteSubscriptionRecord(userEmail);
+      setIsSubscribed(false);
+      router.push('/dashboard');
     } finally {
       setLoadingCancelButton(false);
     }
@@ -229,7 +225,7 @@ export default function BillingPage() {
       <div className="mx-auto max-w-2xl text-center lg:max-w-4xl">
         <h2 className="text-base font-semibold leading-7 text-indigo-600">Pricing</h2>
         <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-        {isSubscribed ? "Manage Your Subscription" : "Choose the plan that's right for you"}
+          {isSubscribed ? "Manage Your Subscription" : "Choose the plan that's right for you"}
         </p>
       </div>
       <p className="mx-auto mt-2 max-w-2xl text-center text-sm leading-6 text-gray-600">
