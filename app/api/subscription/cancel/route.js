@@ -20,7 +20,7 @@ export async function POST(req) {
       .select()
       .from(UserSubscription)
       .where(eq(UserSubscription.email, email));
-    
+
     if (result.length === 0) {
       throw new Error('Subscription not found');
     }
@@ -29,8 +29,7 @@ export async function POST(req) {
     console.log('Database query result:', result);
 
     // Cancel the subscription in Stripe
-    const stripeSubscription = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
-    await stripe.subscriptions.del(stripeSubscription.id);
+    const stripeSubscription = await stripe.subscriptions.del(subscription.stripeSubscriptionId);
 
     // Delete the subscription record from the database
     await db
