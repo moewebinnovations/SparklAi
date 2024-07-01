@@ -2,7 +2,6 @@ import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
 import { db } from '../../../utils/db'; // Adjust the path as needed
 import { UserSubscription } from '../../../utils/schema'; // Adjust the path as needed
-import { users } from '@clerk/clerk-sdk-node'; // Import Clerk correctly
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
@@ -26,43 +25,22 @@ export async function POST(req) {
   // Log the event for now
   console.log('Success:', event);
 
-  // Handle the event
-  if (event.type === 'invoice.payment_succeeded') {
-    const invoice = event.data.object;
-    const customer = await stripe.customers.retrieve(invoice.customer);
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    const stripeSubscriptionId = subscription.id;
 
-    // Fetch Clerk user details
-    const userId = customer.metadata.clerkUserId; // Assuming you have stored the Clerk user ID in Stripe metadata
-    let userEmail = '';
+    // Find the subscription record in the database and delete it
     try {
-      const clerkUser = await users.getUser(userId);
-      if (clerkUser && clerkUser.primaryEmailAddress) {
-        userEmail = clerkUser.primaryEmailAddress.emailAddress;
-      }
-    } catch (error) {
-      console.error('Error fetching Clerk user details:', error);
-    }
-
-    // Extract relevant information
-    const subscriptionData = {
-      email: customer.email,
-      userName: userEmail || 'Unknown User',
-      active: true, // Ensure this is a boolean
-      paymentId: invoice.payment_intent,
-      joinDate: new Date().toISOString(),
-      stripeCustomerId: customer.id, // Store the Stripe customer ID
-      stripeSubscriptionId: invoice.subscription, // Store the Stripe subscription ID
-    };
-
-    // Save subscription data to the database
-    try {
-      await db.insert(UserSubscription).values(subscriptionData);
-      console.log('Subscription saved to database successfully.');
+      await db
+        .delete(UserSubscription)
+        .where(eq(UserSubscription.stripeSubscriptionId, stripeSubscriptionId));
+      console.log('Subscription deleted from database successfully.');
     } catch (dbError) {
-      console.error('Error saving subscription to database:', dbError);
+      console.error('Error deleting subscription from database:', dbError);
     }
   }
 
-  // Send a response to acknowledge receipt of the event
+  // Add any other event types you want to handle here
+
   return new NextResponse('Event received', { status: 200 });
 }
