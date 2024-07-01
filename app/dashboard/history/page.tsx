@@ -17,7 +17,6 @@ import {
   DialogTitle
 } from '@headlessui/react';
 import Link from 'next/link';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export interface HISTORY {
   id: number;
@@ -30,7 +29,7 @@ export interface HISTORY {
 
 const getTemplateNameAndIcon = (slug: string) => {
   const template = Templates.find(template => template.slug === slug);
-  return template ? { name: template.name, icon: template.icon as IconProp } : { name: 'Unknown Template', icon: faExclamationCircle as IconProp };
+  return template ? { name: template.name, icon: template.icon } : { name: 'Unknown Template', icon: faExclamationCircle };
 };
 
 const getWordCount = (text: string) => {
