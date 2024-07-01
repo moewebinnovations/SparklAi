@@ -30,7 +30,7 @@ export interface HISTORY {
 
 const getTemplateNameAndIcon = (slug: string) => {
   const template = Templates.find(template => template.slug === slug);
-  return template ? { name: template.name, icon: template.icon as IconProp } : { name: 'Unknown Template', icon: '' as IconProp };
+  return template ? { name: template.name, icon: template.icon as IconProp } : { name: 'Unknown Template', icon: faExclamationCircle as IconProp };
 };
 
 const getWordCount = (text: string) => {
@@ -290,7 +290,7 @@ function HistoryPage() {
                       {getWordCount(item.aiResponse)}
                     </td>
                     <td className="px-2 md:px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-                      {formatDateString(item.createdAt)}
+                      {formatDateString(item.createdAt)} {/* Format the date */}
                     </td>
                     <td className="px-2 md:px-6 py-4 whitespace-no-wrap border-b border-gray-200 flex gap-2">
                       <button
