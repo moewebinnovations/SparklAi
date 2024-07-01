@@ -73,7 +73,8 @@ export async function POST(req) {
         await db
           .update(UserSubscription)
           .set({ cancelAtPeriodEnd: subscription.cancel_at_period_end })
-          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id));
+          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id))
+          .execute(); // Ensure you call .execute() at the end of the query chain
 
         console.log('Subscription record updated in the database.');
       } catch (error) {
@@ -89,7 +90,8 @@ export async function POST(req) {
         // Delete the subscription record from the database
         await db
           .delete(UserSubscription)
-          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id));
+          .where(eq(UserSubscription.stripeSubscriptionId, subscription.id))
+          .execute(); // Ensure you call .execute() at the end of the query chain
 
         console.log('Subscription record deleted from database.');
       } catch (error) {
