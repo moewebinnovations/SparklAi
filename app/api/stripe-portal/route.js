@@ -7,9 +7,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 export async function POST(req) {
   try {
-    const { customerId, email } = await req.json(); // Get customerId and email from the request body
-    if (!customerId || !email) {
-      throw new Error('Missing customerId or email');
+    const { customerId } = await req.json(); // Get customerId from the request body
+    if (!customerId) {
+      throw new Error('Missing customerId');
     }
 
     const session = await stripe.billingPortal.sessions.create({

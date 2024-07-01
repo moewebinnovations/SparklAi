@@ -143,7 +143,6 @@ export default function BillingPage() {
       setIsSubscribed(false);
     }
   };
-  
 
   const handleUpgradeClick = async (priceId: string) => {
     setLoading(true);
@@ -154,18 +153,20 @@ export default function BillingPage() {
       setLoading(false);
     }
   };
-  
 
   const handleCancelSubscription = async () => {
+    if (!customerId) {
+      console.error('Customer ID is not defined');
+      return;
+    }
     setLoadingCancelButton(true);
     try {
-      await deleteSubscriptionRecord(userEmail); // Delete the subscription record from the database
-      setIsSubscribed(false); // Update local state to reflect cancellation
-      router.push('/dashboard'); // Redirect to the dashboard
+      await redirectToCustomerPortal(customerId); // Redirect the customer to Stripe's billing portal
     } finally {
       setLoadingCancelButton(false);
     }
   };
+
 
   return (
     <div className="relative isolate bg-white px-4 pt-2 pb-12 sm:pb-16 lg:px-4">
