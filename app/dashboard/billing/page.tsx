@@ -318,7 +318,7 @@ export default function BillingPage() {
             </>
           ) : (
             <button
-            onClick={() => handleUpgradeClick('price_1PXqUHP2RWOJhMEQsnfdevyh')} // Replace with your actual price ID from Stripe
+            onClick={() => handleUpgradeClick(process.env.NEXT_PUBLIC_STRIPE_PROD_PRICE_ID || '')} // Replace with your actual price ID from Stripe
                           className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
             >
               {loading ? (
