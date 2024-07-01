@@ -20,7 +20,7 @@ export async function POST(req) {
       .select()
       .from(UserSubscription)
       .where(eq(UserSubscription.email, email));
-
+// added
     console.log('Database query result:', result);
 
     const subscription = result.length > 0 ? result[0] : null;
