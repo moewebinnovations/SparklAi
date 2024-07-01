@@ -325,8 +325,15 @@ export default function BillingPage() {
             </>
           ) : (
             <button
-              onClick={() => handleUpgradeClick('price_1PWkRpP2RWOJhMEQ7zkyRY9h')} // Replace with your actual price ID from Stripe
-              className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
+            onClick={() => {
+              const priceId = process.env.STRIPE_PROD_PRICE_ID;
+              if (priceId) {
+                handleUpgradeClick(priceId);
+              } else {
+                console.error('Stripe price ID is undefined');
+              }
+            }}
+                          className="mt-4 block rounded-md px-2.5 py-2 w-full text-center text-sm font-semibold bg-indigo-500 text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-indigo-500"
             >
               {loading ? (
                 <Loader className="h-5 w-5 animate-spin mx-auto" />
