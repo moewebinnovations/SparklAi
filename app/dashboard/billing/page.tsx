@@ -326,7 +326,7 @@ export default function BillingPage() {
           ) : (
             <button
             onClick={() => {
-              const priceId = process.env.NEXT_PUBLIC_STRIPE_PROD_PRICE_ID;
+              const priceId = "price_1PXppwP2RWOJhMEQct2V5f8g";
               if (priceId) {
                 handleUpgradeClick(priceId);
               } else {
