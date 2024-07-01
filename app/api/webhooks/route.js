@@ -71,14 +71,13 @@ export async function POST(req) {
       // Optionally, you can update the database to mark this subscription as pending cancellation
       try {
         await db
-          .update(UserSubscription)
-          .set({ active: false })
+          .delete(UserSubscription)
           .where(eq(UserSubscription.stripesubscriptionid, subscription.id))
           .execute(); // Ensure you call .execute() at the end of the query chain
 
-        console.log('Subscription record updated in the database.');
+        console.log('Subscription record deleted from database.');
       } catch (error) {
-        console.error('Error updating subscription record in database:', error.message);
+        console.error('Error deleting subscription record from database:', error.message);
         return new NextResponse('Internal Server Error', { status: 500 });
       }
       break;
