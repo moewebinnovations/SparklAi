@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../utils/db'; // Adjust the path as needed
 import { UserSubscription } from '../../../utils/schema'; // Adjust the path as needed
 import { eq } from 'drizzle-orm';
+import { users } from '@clerk/clerk-sdk-node'; // Import Clerk correctly
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
@@ -22,9 +23,6 @@ export async function POST(req) {
     console.error('⚠️  Webhook signature verification failed.', err.message);
     return new NextResponse('Webhook Error: signature verification failed', { status: 400 });
   }
-
-  // Log the event for now
-  console.log('Success:', event);
 
   // Handle the event
   switch (event.type) {
