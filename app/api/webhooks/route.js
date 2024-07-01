@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '../../../utils/db'; // Adjust the path as needed
 import { UserSubscription } from '../../../utils/schema'; // Adjust the path as needed
 import { users } from '@clerk/clerk-sdk-node'; // Import Clerk correctly
+import getRawBody from 'raw-body'; // Import raw-body to handle raw request body
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-04-10',
@@ -21,7 +22,9 @@ export async function POST(req) {
   let event;
 
   try {
-    const buf = await req.buffer(); // Get the raw body buffer
+    const buf = await getRawBody(req, {
+      encoding: 'utf-8',
+    });
     event = stripe.webhooks.constructEvent(buf, sig, stripeWebhookSecret);
     console.log('Event successfully verified:', event);
   } catch (err) {
