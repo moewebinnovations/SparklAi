@@ -51,6 +51,7 @@ export async function POST(req) {
       paymentId: invoice.payment_intent,
       joinDate: new Date().toISOString(),
       stripeCustomerId: customer.id, // Store the Stripe customer ID
+      stripeSubscriptionId: invoice.subscription, // Store the Stripe subscription ID
     };
 
     // Save subscription data to the database
