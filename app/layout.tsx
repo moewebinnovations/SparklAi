@@ -34,6 +34,7 @@ export default function RootLayout({
           <meta name="twitter:description" content="SparklAi makes it easy to create high-quality content in seconds. Enhance your productivity with our cutting-edge AI technology." />
           <meta name="twitter:image" content="https://i.ibb.co/H7hDFvW/Sparkl-AI-1.png" />
           <meta name="twitter:image:alt" content="SparklAi Screenshot" />
+          <script src="//code.tidio.co/t2ykck2q55satrmdc4zq22dtbrvj6xgh.js" async></script>
         </head>
         <body className={outfit.className}>
           {children}
