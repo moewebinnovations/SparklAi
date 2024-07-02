@@ -75,7 +75,7 @@ export default function ContactUs() {
         });
 
         if (res.ok) {
-          setStatus('Your message has been sent successfully!');
+          setStatus('Your message has been sent successfully. We aim to reply back within 2-3 business days!');
           setIsSuccess(true);
           setFormData({
             firstname: '',
