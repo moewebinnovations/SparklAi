@@ -76,7 +76,7 @@ function SearchTools({ onSearchInput, onCategoryChange }: any) {
           </li>
         </ol>
       </nav>
-      <div className='w-full flex justify-center'>
+      <div className='w-full flex justify-center sm:p-5 md:p-5'>
         <div className='flex gap-2 items-center p-2 rounded-full bg-white my-5 w-full sm:w-[75%] lg:w-[50%] border-2 border-blue-500'>
           <div className='bg-blue-500 p-2 rounded-full'>
             <Search className='text-white' />
