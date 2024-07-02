@@ -73,7 +73,7 @@ function TrackUsage() {
     });
 
     setTotalUsage(total);
-    console.log(total);
+    // console.log(total);
   };
 
   const getWordCount = (text: string) => {

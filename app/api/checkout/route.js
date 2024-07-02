@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function POST(req) {
   try {
     const { priceId, email } = await req.json();
-    console.log("Received priceId:", priceId, "Email:", email); // Debug log
+    // console.log("Received priceId:", priceId, "Email:", email); // Debug log
 
     if (!priceId) {
       console.error("Price ID is missing");
@@ -39,7 +39,7 @@ export async function POST(req) {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    console.log("Session created successfully:", session.id);
+    // console.log("Session created successfully:", session.id);
     return NextResponse.json({ sessionId: session.id });
   } catch (error) {
     console.error("Error creating session:", error.message);

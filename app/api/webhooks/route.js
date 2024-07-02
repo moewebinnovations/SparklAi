@@ -17,14 +17,14 @@ export async function POST(req) {
   try {
     const buf = await req.text();
     event = stripe.webhooks.constructEvent(buf, sig, stripeWebhookSecret);
-    console.log('Event successfully verified:', event);
+    // console.log('Event successfully verified:', event);
   } catch (err) {
     console.error('⚠️  Webhook signature verification failed.', err.message);
     return new NextResponse('Webhook Error: signature verification failed', { status: 400 });
   }
 
   // Log the event for now
-  console.log('Success:', event);
+  // console.log('Success:', event);
 
   // Handle the event
   switch (event.type) {
@@ -58,7 +58,7 @@ export async function POST(req) {
       // Save subscription data to the database
       try {
         await db.insert(UserSubscription).values(subscriptionData);
-        console.log('Subscription saved to database successfully.');
+        // console.log('Subscription saved to database successfully.');
       } catch (dbError) {
         console.error('Error saving subscription to database:', dbError);
       }
@@ -66,7 +66,7 @@ export async function POST(req) {
     }
     case 'customer.subscription.updated': {
       const subscription = event.data.object;
-      console.log('Subscription updated:', subscription);
+      // console.log('Subscription updated:', subscription);
 
       // Optionally, you can update the database to mark this subscription as pending cancellation
       try {
@@ -75,7 +75,7 @@ export async function POST(req) {
           .where(eq(UserSubscription.stripesubscriptionid, subscription.id))
           .execute(); // Ensure you call .execute() at the end of the query chain
 
-        console.log('Subscription record deleted from database.');
+        // console.log('Subscription record deleted from database.');
       } catch (error) {
         console.error('Error deleting subscription record from database:', error.message);
         return new NextResponse('Internal Server Error', { status: 500 });
@@ -92,7 +92,7 @@ export async function POST(req) {
           .where(eq(UserSubscription.stripesubscriptionid, subscription.id))
           .execute(); // Ensure you call .execute() at the end of the query chain
 
-        console.log('Subscription record deleted from database.');
+        // console.log('Subscription record deleted from database.');
       } catch (error) {
         console.error('Error deleting subscription record from database:', error.message);
         return new NextResponse('Internal Server Error', { status: 500 });
@@ -101,7 +101,7 @@ export async function POST(req) {
     }
     // Add other event types as needed
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      // console.log(`Unhandled event type ${event.type}`);
   }
 
   // Send a response to acknowledge receipt of the event

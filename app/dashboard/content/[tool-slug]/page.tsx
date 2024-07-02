@@ -76,7 +76,7 @@ function CreateNewContent(props: PROPS) {
     try {
       const result = await chatSession.sendMessage(FinalAiPrompt);
       const responseText = await result.response.text();
-      console.log(responseText);
+      // console.log(responseText);
       setAiOutputText(responseText || "");
 
       // Save response to the database
