@@ -250,11 +250,11 @@ export default function ContactUs() {
                 </a>
                 .
               </label>
-              {status && (
+              {/* {status && (
                 <p className={`ml-4 text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
                   {status}
                 </p>
-              )}
+              )} */}
             </div>
           </div>
           <div className="mt-10">
