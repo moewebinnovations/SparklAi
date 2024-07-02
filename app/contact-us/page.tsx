@@ -22,6 +22,10 @@ interface FormData {
   message: string;
 }
 
+interface FormErrors {
+  [key: string]: string;
+}
+
 export default function ContactUs() {
   const [agreed, setAgreed] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -32,6 +36,7 @@ export default function ContactUs() {
     phonenumber: '',
     message: '',
   });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
 
@@ -40,36 +45,56 @@ export default function ContactUs() {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const validateForm = () => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.firstname) newErrors.firstname = 'First name is required';
+    if (!formData.lastname) newErrors.lastname = 'Last name is required';
+    if (!formData.company) newErrors.company = 'Company is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.phonenumber) newErrors.phonenumber = 'Phone number is required';
+    if (!formData.message) newErrors.message = 'Message is required';
+    if (!agreed) newErrors.agreed = 'You must agree to the privacy policy';
+
+    return newErrors;
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      const res = await fetch('/api/form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
 
-      if (res.ok) {
-        setStatus('Your message has been sent successfully!');
-        setIsSuccess(true);
-        setFormData({
-          firstname: '',
-          lastname: '',
-          company: '',
-          email: '',
-          phonenumber: '',
-          message: '',
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        const res = await fetch('/api/form', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
         });
-      } else {
+
+        if (res.ok) {
+          setStatus('Your message has been sent successfully!');
+          setIsSuccess(true);
+          setFormData({
+            firstname: '',
+            lastname: '',
+            company: '',
+            email: '',
+            phonenumber: '',
+            message: '',
+          });
+          setAgreed(false);
+        } else {
+          setStatus('Something went wrong, please try again.');
+          setIsSuccess(false);
+        }
+      } catch (error) {
+        console.error('Error submitting the form:', error);
         setStatus('Something went wrong, please try again.');
         setIsSuccess(false);
       }
-    } catch (error) {
-      console.error('Error submitting the form:', error);
-      setStatus('Something went wrong, please try again.');
-      setIsSuccess(false);
     }
   };
 
@@ -111,6 +136,7 @@ export default function ContactUs() {
                   autoComplete="given-name"
                   className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.firstname && <p className="text-red-600 text-sm mt-1">{errors.firstname}</p>}
               </div>
             </div>
             <div>
@@ -127,6 +153,7 @@ export default function ContactUs() {
                   autoComplete="family-name"
                   className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.lastname && <p className="text-red-600 text-sm mt-1">{errors.lastname}</p>}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -143,6 +170,7 @@ export default function ContactUs() {
                   autoComplete="organization"
                   className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.company && <p className="text-red-600 text-sm mt-1">{errors.company}</p>}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -159,6 +187,7 @@ export default function ContactUs() {
                   autoComplete="email"
                   className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -175,6 +204,7 @@ export default function ContactUs() {
                   autoComplete="tel"
                   className="block w-full rounded-md border-0 px-3.5 py-2  text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.phonenumber && <p className="text-red-600 text-sm mt-1">{errors.phonenumber}</p>}
               </div>
             </div>
             <div className="sm:col-span-2">
@@ -190,9 +220,10 @@ export default function ContactUs() {
                   rows={4}
                   className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 />
+                {errors?.message && <p className="text-red-600 text-sm mt-1">{errors.message}</p>}
               </div>
             </div>
-            <Field as="div" className="flex gap-x-4 sm:col-span-2">
+            <div className="flex items-center gap-x-4 sm:col-span-2">
               <div className="flex h-6 items-center">
                 <Switch
                   checked={agreed}
@@ -212,14 +243,19 @@ export default function ContactUs() {
                   />
                 </Switch>
               </div>
-              <Label className="text-sm leading-6 text-gray-600">
+              <label className="text-sm leading-6 text-gray-600">
                 By selecting this, you agree to our{' '}
                 <a href="#" className="font-semibold text-indigo-600">
                   privacy&nbsp;policy
                 </a>
                 .
-              </Label>
-            </Field>
+              </label>
+              {status && (
+                <p className={`ml-4 text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+                  {status}
+                </p>
+              )}
+            </div>
           </div>
           <div className="mt-10">
             <button
